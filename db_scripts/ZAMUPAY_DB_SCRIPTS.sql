@@ -30,11 +30,11 @@ DROP TABLE IF EXISTS transaction_log;
 CREATE TABLE transaction_log
 (
    transaction_log_id                   bigint(11) NOT NULL AUTO_INCREMENT,
-   originator_conversation_id           varchar(100) NOT NULL,
+   mfs_reference_id                     varchar(100) NOT NULL,
    payment_notes                        varchar(255) NOT NULL,
    recipient_phone_number               varchar(13) NOT NULL,
    recipient_primary_account_number     varchar(255) NOT NULL,
-   recipient_mccmnc                     varchar(255) ,
+   recipient_mccmnc                     varchar(255),
    recipient_ccy                        varchar(255) NOT NULL,
    recipient_country                    varchar(255) NOT NULL,
    transaction_routeId                  varchar(255) NOT NULL,
