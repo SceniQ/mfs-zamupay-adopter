@@ -1,29 +1,32 @@
 package com.mfs.client.zamupay.api.integration;
 
 import java.text.MessageFormat;
+import java.util.Calendar;
 import java.util.Date;
 
 import javax.net.ssl.SSLContext;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.mfs.client.zamupay.api.dto.MFSResponse;
 import com.mfs.client.zamupay.api.dto.TransactionResponse;
 import com.mfs.client.zamupay.api.service.ConfigService;
+import com.mfs.client.zamupay.exception.InvalidTokenException;
 import com.mfs.client.zamupay.infrastucture.MFSConstants;
+import com.mfs.client.zamupay.persistence.AccessTokenRepository;
 import com.mfs.client.zamupay.persistence.EventLogRepository;
 import com.mfs.client.zamupay.persistence.TransactionRepository;
+import com.mfs.client.zamupay.persistence.model.AccessToken;
 import com.mfs.client.zamupay.persistence.model.EventLog;
 import com.mfs.client.zamupay.persistence.model.TransactionLog;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.conn.ssl.TrustStrategy;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.stereotype.Component;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 import org.springframework.util.StringUtils;
 import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestTemplate;
@@ -50,11 +53,65 @@ public class ClientIntegrationService {
     final ConfigService configService;
     final EventLogRepository eventLogRepository;
     final TransactionRepository transactionRepository;
+	final AccessTokenRepository tokenRepository;
 
     private final ObjectMapper mapper = new ObjectMapper();
     private RestTemplate template;
     
     private EventLog eventLog;
+
+
+	/**
+	 * Invokes partner to get the authentication details
+	 *
+	 * @return accessToken object
+	 */
+	public AccessToken getAccessToken() {
+		try{
+			String tokenUrl = configService.getConfigByKey(MFSConstants.TOKEN_URL);
+			log.info("Token Request URL: {}",tokenUrl);
+			template = getRestTemplate(tokenUrl);
+
+			final HttpHeaders header = new HttpHeaders();
+			header.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+
+			MultiValueMap<String, String> requestBody = new LinkedMultiValueMap<String, String>();
+			requestBody.add("client_id", configService.getConfigByKey(MFSConstants.CLIENT_ID));
+			requestBody.add("client_secret", configService.getConfigByKey(MFSConstants.CLIENT_SECRET));
+			requestBody.add("grant_type", configService.getConfigByKey(MFSConstants.GRANT_TYPE));
+			requestBody.add("scope", configService.getConfigByKey(MFSConstants.SCOPE));
+
+			HttpEntity<MultiValueMap<String, String>> formEntity = new HttpEntity<MultiValueMap<String, String>>(requestBody, header);
+			log.info("Token Request: {}",formEntity.toString());
+			ResponseEntity<String> response = template.exchange(tokenUrl, HttpMethod.POST, formEntity, String.class);
+			log.info("Token Request response: {}", response.getBody());
+
+			JsonNode jsonNode = mapper.readTree(response.getBody());
+			//Log the token
+			Calendar calendar = Calendar.getInstance();
+			AccessToken accessToken = new AccessToken();
+			accessToken.setAccessToken(jsonNode.at("/access_token").asText());
+			accessToken.setCreatedOn(calendar.getTime());
+			calendar.add(Calendar.HOUR, 1);
+			accessToken.setExpiresIn(calendar.getTime());
+			accessToken.setTokenType(jsonNode.at("/token_type").asText());
+			accessToken.setScope(jsonNode.at("/scope").asText());
+
+			return tokenRepository.save(accessToken);
+
+		}catch (HttpStatusCodeException exception){
+			String responseMessage = exception.getResponseBodyAsString();
+			if (StringUtils.isEmpty(responseMessage)) {
+				HttpStatus status = HttpStatus.valueOf(exception.getRawStatusCode());
+				responseMessage = status.value() + " " + status.getReasonPhrase();
+			}
+			log.info("Token Request error response {}", responseMessage);
+			throw new InvalidTokenException(exception.getStatusCode().value(), responseMessage, exception.getCause());
+		}catch (Exception exception){
+			log.info("Token Request error response: {}", exception.getMessage());
+			throw new InvalidTokenException(HttpStatus.BAD_REQUEST.value(), exception.getMessage(), exception.getCause());
+		}
+	}
 
 	/**
 	 * Initiating bank client money transfer request
@@ -64,7 +121,9 @@ public class ClientIntegrationService {
 	 */
     public MFSResponse<TransactionResponse> submitTransaction(TransactionLog transactionLog) {
         try {
-            // Prepare JSON request for bank end-point
+			AccessToken token = tokenRepository.getByCreatedDateBetween(new Date()).orElseGet(this::getAccessToken);
+
+			// Prepare JSON request for bank end-point
             String jsonRequest = prepareClientRequest(transactionLog);
 
             // Create log in event log

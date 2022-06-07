@@ -32,7 +32,8 @@ import java.util.Optional;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
-import static com.mfs.client.zamupay.infrastucture.MFSConstants.*;
+import static com.mfs.client.zamupay.infrastucture.MFSConstants.QUERY_SERVICE_URL;
+import static com.mfs.client.zamupay.infrastucture.MFSConstants.SUBMIT_TRANSACTION_URL;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.when;
@@ -85,7 +86,6 @@ public class ClientIntegrationServiceTest {
 		when(eventLogRepository.save(any(EventLog.class))).thenReturn(EventLog.builder().eventId(1L).build());
 		when(configService.getConfigByKey(SUBMIT_TRANSACTION_URL)).thenReturn("http://localhost:8080/mpambaservice/v1/B2CTransfer");
 		when(configService.getConfigByKey(QUERY_SERVICE_URL)).thenReturn("http://localhost:8080/mpambaservice/v1/CheckB2CTransaction");
-		when(configService.getConfigByKey(KYC_URL)).thenReturn("http://localhost:8080/mpambaservice/v1/KYC");
 		when(transactionRepository.findByMfsReferenceId(any(String.class))).thenReturn(Optional.empty());
 		when(transactionRepository.save(any(TransactionLog.class))).thenReturn(transactionLog());
 	}

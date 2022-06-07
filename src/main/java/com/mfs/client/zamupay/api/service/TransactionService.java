@@ -9,9 +9,11 @@ import com.mfs.client.zamupay.exception.DuplicateRequestException;
 import com.mfs.client.zamupay.exception.NoSuchTransactionExistsException;
 import com.mfs.client.zamupay.infrastucture.ResponseCode;
 import com.mfs.client.zamupay.persistence.TransactionRepository;
+import com.mfs.client.zamupay.persistence.model.AccessToken;
 import com.mfs.client.zamupay.persistence.model.TransactionLog;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import javax.validation.*;
@@ -76,6 +78,19 @@ public class TransactionService {
         log.info("Query transaction response: {}", mapper.writeValueAsString(response));
         return response;
 
+    }
+
+    /**
+     * Checks for connectivity
+     *
+     * @return accessToken object
+     */
+    public MFSResponse<AccessToken> getAccessToken() {
+        AccessToken accessToken = integrationService.getAccessToken();
+        return MFSResponse.<AccessToken>builder()
+                .statusCode(HttpStatus.OK.value())
+                .response(accessToken)
+                .build();
     }
 
     /**
