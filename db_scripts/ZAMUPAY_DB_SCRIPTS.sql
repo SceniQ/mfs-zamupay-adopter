@@ -122,7 +122,7 @@ CREATE TABLE mncmcc_master
 -- ----------------------------
 -- Records of system_config
 -- ----------------------------
-INSERT INTO system_config (config_key, config_value) VALUES ('Access_Token_URL','http://54.224.92.175:10001/connect/token');
+INSERT INTO system_config (config_key, config_value) VALUES ('TOKEN_URL','http://54.224.92.175:10001/connect/token');
 INSERT INTO system_config (config_key, config_value) VALUES ('CLIENT_ID','PyPay_api');
 INSERT INTO system_config (config_key, config_value) VALUES ('CLIENT_SECRET','PyPayApiSecret');
 INSERT INTO system_config (config_key, config_value) VALUES ('GRANT_TYPE','client_credentials');
