@@ -26,7 +26,7 @@ import org.springframework.web.bind.annotation.*;
 @Log4j2
 @RestController
 @RequiredArgsConstructor
-@RequestMapping(path = "/bank", produces = MediaType.APPLICATION_JSON_VALUE)
+@RequestMapping(path = "/zamupay", produces = MediaType.APPLICATION_JSON_VALUE)
 public class TransactionController {
 
     final TransactionService transactionService;

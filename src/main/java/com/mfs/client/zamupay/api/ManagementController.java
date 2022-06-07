@@ -13,7 +13,7 @@ import java.util.Map;
  */
 @RequiredArgsConstructor
 @RestController
-@RequestMapping("/bank/")
+@RequestMapping("/zamupay/")
 public class ManagementController {
 
     final ConfigService configService;
