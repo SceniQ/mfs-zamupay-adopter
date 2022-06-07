@@ -5,6 +5,7 @@ import com.mfs.client.zamupay.api.dto.MFSResponse;
 import com.mfs.client.zamupay.api.dto.TransactionRequest;
 import com.mfs.client.zamupay.api.dto.TransactionResponse;
 import com.mfs.client.zamupay.api.service.TransactionService;
+import com.mfs.client.zamupay.persistence.model.AccessToken;
 import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -31,6 +32,17 @@ public class TransactionController {
 
     final TransactionService transactionService;
     final ObjectMapper mapper;
+
+    /**
+     * Used to check for connection with partner
+     *
+     * @return authentication details
+     */
+    @GetMapping(value = "/accessToken", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> getAccessToken() {
+        MFSResponse<AccessToken> mfsResponse = transactionService.getAccessToken();
+        return new ResponseEntity<>(mfsResponse.getResponse(), HttpStatus.valueOf(mfsResponse.getStatusCode()));
+    }
 
     /**
      * End-point for creating remittance transaction request for client

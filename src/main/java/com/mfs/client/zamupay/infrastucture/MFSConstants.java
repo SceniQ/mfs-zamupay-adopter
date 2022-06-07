@@ -9,12 +9,16 @@ public final class MFSConstants {
 	//Constants for Client URLs
 	public static final String SUBMIT_TRANSACTION_URL = "B2C_TRANSFER_URL";
 	public static final String QUERY_SERVICE_URL = "CHECK_B2C_TRANSACTION_URL";
-	public static final String KYC_URL = "QUERY_KYC_URL";
+	public static final String TOKEN_URL = "TOKEN_URL";
 	public static final String ACCOUNT_BALANCE_URL = "QUERY_ACCOUNT_BALANCE_URL";
 	
 	//Application specific constants
 	public static final String SUBMIT_TRANSACTION_SERVICE = "SUBMIT_TRANSACTION_SERVICE";
 	public static final String QUERY_SERVICE = "QUERY_SERVICE";
 	public static final String TIMEOUT = "TIMEOUT";
+	public static final String CLIENT_ID = "CLIENT_ID";
+	public static final String CLIENT_SECRET = "CLIENT_SECRET";
+	public static final String GRANT_TYPE = "GRANT_TYPE";
+	public static final String SCOPE = "SCOPE";
 
 }
