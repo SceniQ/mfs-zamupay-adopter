@@ -41,6 +41,7 @@ CREATE TABLE transaction_log
    transaction_Channel_type             varchar(255) NOT NULL,
    remarks                              varchar(255) NOT NULL,
    system_conversation_id               varchar(255) NOT NULL,
+   status                               varchar(255) NOT NULL,
    result_code                          varchar(255) NOT NULL,
    result_desc                          varchar(255) NOT NULL,
    transaction_amount                   varchar(255) NOT NULL,
@@ -48,8 +49,8 @@ CREATE TABLE transaction_log
     PRIMARY KEY (transaction_log_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-DROP TABLE IF EXISTS kcb_transaction_detail;
-CREATE TABLE kcb_transaction_detail
+DROP TABLE IF EXISTS transaction_detail;
+CREATE TABLE transaction_detail
 (
     transaction_detail_id                   bigint(20) NOT NULL AUTO_INCREMENT,
     remitter_name                           varchar(128) DEFAULT NULL,
@@ -77,18 +78,6 @@ CREATE TABLE kcb_transaction_detail
     CONSTRAINT FK_transaction_detail FOREIGN KEY (transaction_id) REFERENCES transaction_log (transaction_log_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-DROP TABLE IF EXISTS access_token;
-CREATE TABLE access_token
-(
-    id               bigint NOT NULL AUTO_INCREMENT,
-    access_token            longtext NOT NULL,
-    created_on     datetime   NOT NULL,
-    expires_in      datetime   NOT NULL,
-    token_type     varchar(11) NOT NULL,
-    scope          varchar(255)  NOT NULL,
-    PRIMARY KEY (id)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
 DROP TABLE IF EXISTS identity_type;
 CREATE TABLE identity_type
 (
@@ -97,27 +86,6 @@ CREATE TABLE identity_type
     id_value     varchar(255)   NOT NULL,
     PRIMARY KEY (id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
-DROP TABLE IF EXISTS transaction_route;
-CREATE TABLE transaction_route
-(
-    id               bigint NOT NULL AUTO_INCREMENT,
-    route_id     varchar(3)   NOT NULL,
-    channel_type     varchar(255)   NOT NULL,
-    transaction_type_id varchar(100) NOT NULL
-    PRIMARY KEY (id)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
-DROP TABLE IF EXISTS mncmcc_master;
-CREATE TABLE mncmcc_master
-(
-    mncmcc_id     int(11) NOT NULL AUTO_INCREMENT,
-    country_code  varchar(100) NOT NULL,
-    mcc           varchar(3) NOT NULL,
-    mnc           varchar(2) NOT NULL,
-    operator_name varchar(100) NOT NULL,
-    PRIMARY KEY (mncmcc_id)
-) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=latin1;
 
 DROP TABLE IF EXISTS country_master;
 CREATE TABLE country_master
@@ -131,6 +99,41 @@ CREATE TABLE country_master
     phone_code          int(11) DEFAULT NULL,
     PRIMARY KEY (country_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+DROP TABLE IF EXISTS transaction_route;
+CREATE TABLE transaction_route
+(
+    id               bigint NOT NULL AUTO_INCREMENT,
+    route_id     varchar(3)   NOT NULL,
+    channel_type     varchar(255)   NOT NULL,
+    transaction_type_id varchar(100) NOT NULL
+    PRIMARY KEY (id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+DROP TABLE IF EXISTS access_token;
+CREATE TABLE access_token
+(
+    id               bigint NOT NULL AUTO_INCREMENT,
+    access_token            longtext NOT NULL,
+    created_on     datetime   NOT NULL,
+    expires_in      datetime   NOT NULL,
+    token_type     varchar(11) NOT NULL,
+    scope          varchar(255)  NOT NULL,
+    PRIMARY KEY (id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+
+DROP TABLE IF EXISTS mncmcc_master;
+CREATE TABLE mncmcc_master
+(
+    mncmcc_id     int(11) NOT NULL AUTO_INCREMENT,
+    country_code  varchar(100) NOT NULL,
+    mcc           varchar(3) NOT NULL,
+    mnc           varchar(2) NOT NULL,
+    operator_name varchar(100) NOT NULL,
+    PRIMARY KEY (mncmcc_id)
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=latin1;
+
 
 -- ----------------------------
 -- Records of system_config
