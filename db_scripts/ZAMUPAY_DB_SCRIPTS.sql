@@ -1,4 +1,4 @@
-SET FOREIGN_CHECKS=0;
+SET FOREIGN_KEY_CHECKS=0;
 CREATE
 DATABASE IF NOT EXISTS mfsafric_zamupay_test;
 USE
@@ -72,10 +72,10 @@ CREATE TABLE transaction_detail
     recipient_purpose                       varchar(255) DEFAULT NULL,
     transaction_reference                   varchar(255) NOT NULL,
     transaction_system_trace_audit_number   varchar(255) NOT NULL,
-    transaction_id                          int(11) NOT NULL,
+    transaction_log_id                   bigint(11) NOT NULL,
     PRIMARY KEY (transaction_detail_id),
-    UNIQUE KEY UK_transaction_detail (transaction_id),
-    CONSTRAINT FK_transaction_detail FOREIGN KEY (transaction_id) REFERENCES transaction_log (transaction_log_id)
+    UNIQUE KEY (transaction_log_id),
+    CONSTRAINT FOREIGN KEY (transaction_log_id) REFERENCES transaction_log (transaction_log_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 DROP TABLE IF EXISTS identity_type;
@@ -106,7 +106,7 @@ CREATE TABLE transaction_route
     id               bigint NOT NULL AUTO_INCREMENT,
     route_id     varchar(3)   NOT NULL,
     channel_type     varchar(255)   NOT NULL,
-    transaction_type_id varchar(100) NOT NULL
+    transaction_type_id varchar(100) NOT NULL,
     PRIMARY KEY (id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
@@ -429,5 +429,5 @@ INSERT INTO country_master(country_id,country_name,phone_code,currency_code,coun
 INSERT INTO country_master(country_id,country_name,phone_code,currency_code,country_code_alpha3,country_code,numeric_code) VALUES ('248', 'Zambia', '260', 'ZMW', 'ZMB', 'ZM', '894');
 INSERT INTO country_master(country_id,country_name,phone_code,currency_code,country_code_alpha3,country_code,numeric_code) VALUES ('249', 'Zimbabwe', '263', 'ZWL', 'ZWE', 'ZW', '716');
 
-SET FOREIGN_CHECKS=1;
+SET FOREIGN_KEY_CHECKS=0;
 commit;
