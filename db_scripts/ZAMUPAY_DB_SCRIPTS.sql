@@ -83,7 +83,7 @@ CREATE TABLE access_token
     id               bigint NOT NULL AUTO_INCREMENT,
     access_token            longtext NOT NULL,
     created_on     datetime   NOT NULL,
-    expiry_in      datetime   NOT NULL,
+    expires_in      datetime   NOT NULL,
     token_type     varchar(11) NOT NULL,
     scope          varchar(255)  NOT NULL,
     PRIMARY KEY (id)
@@ -98,28 +98,14 @@ CREATE TABLE identity_type
     PRIMARY KEY (id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-DROP TABLE IF EXISTS identity_type;
-CREATE TABLE identity_type
+DROP TABLE IF EXISTS transaction_route;
+CREATE TABLE transaction_route
 (
     id               bigint NOT NULL AUTO_INCREMENT,
     route_id     varchar(3)   NOT NULL,
     channel_type     varchar(255)   NOT NULL,
     transaction_type_id varchar(100) NOT NULL
     PRIMARY KEY (id)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
-
-DROP TABLE IF EXISTS country_master;
-CREATE TABLE country_master
-(
-    country_id          int(11) NOT NULL AUTO_INCREMENT,
-    country_code        varchar(2)  DEFAULT NULL,
-    country_code_alpha3 varchar(3)  DEFAULT NULL,
-    country_name        varchar(45) DEFAULT NULL,
-    currency_code       varchar(5)  DEFAULT NULL,
-    numeric_code        varchar(5)  DEFAULT NULL,
-    phone_code          int(11) DEFAULT NULL,
-    PRIMARY KEY (country_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 DROP TABLE IF EXISTS mncmcc_master;
