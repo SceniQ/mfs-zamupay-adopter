@@ -66,7 +66,7 @@ public class ConfigService {
 	 * @param phoneNumberText represents the phone number to used for acquiring the numeric country code
 	 * @return String which consists of the country code
 	 */
-	public String getNumericCountryCodeByPhoneNumber(String phoneNumberText) {
+	public String getNumericCodeByPhoneNumber(String phoneNumberText) {
 		String countryCode = this.getCountryByPhoneNumber(phoneNumberText);
 		CountryMaster master = countryRepository.findByCountryCode(countryCode)
 				.orElseThrow(() -> new MissingConfigValueException("No country code exists for: " + countryCode));
