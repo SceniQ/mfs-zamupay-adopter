@@ -4,40 +4,41 @@ import java.io.Serializable;
 
 import javax.validation.constraints.NotNull;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import lombok.*;
 import org.hibernate.validator.constraints.NotBlank;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
 
 /**
  * Represent JSON request for creating Remittance transaction from MFS
  */
-@Getter
+@Data
 @EqualsAndHashCode @ToString
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@ApiModel(description = "Represents remittance transaction request.")
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class TransactionRequest implements Serializable{
 
-	@ApiModelProperty(notes = "MFS reference for remittance transaction", required = true)
-	@NotBlank(message = "MFS reference Id should not be blank")
+	@NotBlank(message = "MFS reference ID should not be blank")
 	private String mfsReferenceId;
+	@NotBlank(message = "Payment notes should not be blank")
+	private String paymentNotes;
 
-	@ApiModelProperty(notes = "Primary account number for remittance transaction", required = true)
-	@NotBlank(message = "Primary account number should not be blank")
-	private String primaryAccountNumber;
+	@ApiModelProperty(notes = "Remitter details", required = true)
+	@NotNull(message = "Remitter information should not be blank")
+	private Remitter remitter;
+	@ApiModelProperty(notes = "Recipient details", required = true)
+	@NotNull(message = "Recipient information should not be blank")
+	private Recipient recipient;
+	@ApiModelProperty(notes = "Transaction details", required = true)
+	@NotNull(message = "Transaction information should not be blank")
+	private Transaction transaction;
 
-	@ApiModelProperty(notes = "Amount for remittance transaction", required = true)
-	@Setter
-	@NotNull(message = "Amount should not be null")
-	private Double amount;
+	public static class Remitter{}
+	public static class Recipient{}
+	public static class Transaction{}
 
 }

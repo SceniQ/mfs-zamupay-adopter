@@ -1,11 +1,14 @@
 package com.mfs.client.zamupay.api.integration;
 
+import java.net.SocketTimeoutException;
 import java.text.MessageFormat;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.Map;
 
 import javax.net.ssl.SSLContext;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.mfs.client.zamupay.api.dto.MFSResponse;
 import com.mfs.client.zamupay.api.dto.TransactionResponse;
@@ -18,6 +21,8 @@ import com.mfs.client.zamupay.persistence.TransactionRepository;
 import com.mfs.client.zamupay.persistence.model.AccessToken;
 import com.mfs.client.zamupay.persistence.model.EventLog;
 import com.mfs.client.zamupay.persistence.model.TransactionLog;
+import org.apache.http.conn.ConnectTimeoutException;
+import org.apache.http.conn.HttpHostConnectException;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.conn.ssl.TrustStrategy;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -124,22 +129,37 @@ public class ClientIntegrationService {
 			AccessToken token = tokenRepository.getByCreatedDateBetween(new Date()).orElseGet(this::getAccessToken);
 
 			// Prepare JSON request for bank end-point
-            String jsonRequest = prepareClientRequest(transactionLog);
+            String jsonRequest = preparePaymentRequest(transactionLog);
 
             // Create log in event log
-            eventLog = eventLogRepository.save(createEventLog(transactionLog.getMfsReferenceId(), MFSConstants.SUBMIT_TRANSACTION_SERVICE, jsonRequest));
+            eventLog = eventLogRepository.save(createEventLog(transactionLog.getMfsReferenceId(), MFSConstants.MONEY_TRANSFER_SERVICE, jsonRequest));
 
             // Invoke bank client money transfer end-point
-            String submitTransactionURL = configService.getConfigByKey(MFSConstants.SUBMIT_TRANSACTION_URL);
-            log.info("Money transfer URL: {}",submitTransactionURL);
-            template=getRestTemplate(submitTransactionURL);
-            HttpEntity<String> request = new HttpEntity<>(jsonRequest, initClientHeaders());
+            String paymentOrderUrl = configService.getConfigByKey(MFSConstants.PAYMENT_ORDER_URL);
+            log.info("Money transfer URL: {}",paymentOrderUrl);
+            template=getRestTemplate(paymentOrderUrl);
+
+			final HttpHeaders headers = new HttpHeaders();
+			headers.setContentType(MediaType.APPLICATION_JSON);
+			headers.add("Authorization","Bearer "+token.getAccessToken());
+            HttpEntity<String> request = new HttpEntity<>(jsonRequest, headers);
             
             String httpRequest = mapper.writeValueAsString(request);
-			log.info("Money transfer request for {}: {}", transactionLog.getMfsReferenceId(), httpRequest);
-            ResponseEntity<TransactionResponse> response = template.postForEntity(submitTransactionURL, request, TransactionResponse.class);
+			log.info("Money transfer request for {}: {}", transactionLog.getMfsReferenceId(), request.toString());
+            ResponseEntity<String> response = template.postForEntity(paymentOrderUrl, request, String.class);
             log.info("Money transfer response for {}: {}", transactionLog.getMfsReferenceId(), response.getBody());
-            return processResponse(transactionLog, response.getBody());
+
+			//Update response in Event Log
+			eventLogRepository.save(updateEventLog(eventLog, response.getBody()));
+
+			TransactionResponse transactionResponse = mapper.readValue(response.getBody(),TransactionResponse.class);
+			//update Transaction Log
+			transactionRepository.save(updateTransactionLog(transactionLog,transactionResponse,MFSConstants.MONEY_TRANSFER_SERVICE));
+
+			MFSResponse<TransactionResponse> mfsResponse = new MFSResponse<>();
+			mfsResponse.setStatusCode(HttpStatus.OK.value());
+			mfsResponse.setResponse(transactionResponse);
+			return mfsResponse;
 
         } catch (HttpStatusCodeException httpStatusCodeException) {
 			String responseMessage = httpStatusCodeException.getResponseBodyAsString();
@@ -199,7 +219,7 @@ public class ClientIntegrationService {
     private HttpHeaders initClientHeaders() {
     	final HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
-    	return headers;
+		return headers;
     }
 
     /**
@@ -210,7 +230,7 @@ public class ClientIntegrationService {
      * @return represents a JSON String
      * @throws JsonProcessingException
      */
-	private String prepareClientRequest(TransactionLog transaction) throws JsonProcessingException {
+	private String preparePaymentRequest(TransactionLog transaction) throws JsonProcessingException {
 		return "";
 	}
 
@@ -231,8 +251,8 @@ public class ClientIntegrationService {
 		eventLogRepository.save(eventLog);
 
 		// Update response in transaction log table
-		transactionLog.setResultCode(transactionResponse.getResponseCode());
-		transactionLog.setResultDesc(transactionResponse.getResponseDesc());
+//		transactionLog.setResultCode(transactionResponse.getResponseCode());
+//		transactionLog.setResultDesc(transactionResponse.getResponseDesc());
 		transactionRepository.save(transactionLog);
 
 		bankResponse.setResponse(transactionResponse);
@@ -244,37 +264,45 @@ public class ClientIntegrationService {
 	 * Updates error response into event log table
 	 *
 	 * @param transactionLog represents transaction log
-	 * @param clientException represents HTTP client exception
+	 * @param exception represents HTTP client exception
 	 * @return
 	 */
-	private MFSResponse<TransactionResponse> handleErrorResponse(TransactionLog transactionLog,	Exception clientException) {
-		TransactionResponse transactionResponse=new TransactionResponse();
-		transactionResponse.setMfsReferenceId(transactionLog.getMfsReferenceId());
-		transactionResponse.setPrimaryAccountNumber(transactionLog.getPrimaryAccountNumber());
-		transactionResponse.setAmount(transactionLog.getAmount());
-		MFSResponse<TransactionResponse> mfsResponse = new MFSResponse<>();
-		
-		String responseMessage = null;
-		if(clientException instanceof HttpStatusCodeException) {
-			HttpStatusCodeException httpStatusCodeException = (HttpStatusCodeException)clientException;
-			responseMessage = httpStatusCodeException.getResponseBodyAsString();
+	private MFSResponse<TransactionResponse> handleErrorResponse(TransactionLog transactionLog,	Exception exception) {
+		int statusCode;
+		String message;
+		if (exception instanceof HttpStatusCodeException) {
+			HttpStatusCodeException httpException = (HttpStatusCodeException) exception;
 			try {
-			    transactionResponse = mapper.readValue(httpStatusCodeException.getResponseBodyAsString(), TransactionResponse.class);
-			    mfsResponse.setStatusCode(httpStatusCodeException.getRawStatusCode());
-			} catch (Exception exception) {
-			    mfsResponse.setStatusCode(HttpStatus.INTERNAL_SERVER_ERROR.value());
+				Map<String, Object> errorResponse = mapper.readValue(httpException.getResponseBodyAsString(), new TypeReference<Map<String, Object>>() {});
+				if (errorResponse!=null && errorResponse.containsKey("error") | "invalid_token".equals(String.valueOf(errorResponse.get("error"))))
+					throw new InvalidTokenException(httpException.getMessage());
+				else {
+					statusCode = httpException.getStatusCode().value();
+					message = errorResponse.containsKey("response")?String.valueOf(errorResponse.get("response")): String.valueOf(errorResponse.get("errorFriendlyMessgage"));
+				}
+			} catch (Exception e) {
+				HttpStatus httpStatus = HttpStatus.valueOf(httpException.getRawStatusCode());
+				statusCode = httpStatus.value();
+				message = httpStatus.getReasonPhrase();
 			}
-		}else {
-			responseMessage=clientException.getMessage();
-            mfsResponse.setStatusCode(HttpStatus.INTERNAL_SERVER_ERROR.value());
-		}
-		
-		eventLog.setResponse(responseMessage);
-        eventLog.setDateLogged(new Date());
-		eventLogRepository.save(eventLog);
+		} else if (exception.getCause() instanceof SocketTimeoutException) {
+			statusCode = HttpStatus.REQUEST_TIMEOUT.value();
+			message = exception.getLocalizedMessage();
 
-		mfsResponse.setResponse(transactionResponse);
-		return mfsResponse;
+		} else if (exception.getCause() instanceof ConnectTimeoutException || exception.getCause() instanceof HttpHostConnectException) {
+			statusCode = HttpStatus.GATEWAY_TIMEOUT.value();
+			message = exception.getLocalizedMessage();
+		}  else {
+			statusCode = HttpStatus.INTERNAL_SERVER_ERROR.value();
+			message = exception.getLocalizedMessage();
+		}
+
+		MFSResponse<TransactionResponse> transferResponse = new MFSResponse<>();
+		transferResponse.setStatusCode(statusCode);
+		transferResponse.setResponse(TransactionResponse.builder()
+				.mfsReferenceId(transactionLog.getMfsReferenceId())
+				.build());
+		return transferResponse;
 	}
 
     /**
@@ -289,6 +317,29 @@ public class ClientIntegrationService {
     private EventLog createEventLog(String mfsReferenceId, String serviceName, String jsonRequest) {
         return EventLog.builder().dateLogged(new Date()).mfsReferenceId(mfsReferenceId).request(jsonRequest).serviceName(serviceName).build();
     }
+
+	/**
+	 * Updating transactionLog & transactionDetail with additional fields from the remittance API
+	 *
+	 * @param transactionLog      created log to be updated
+	 * @param response from the client remittance API
+	 * @return transaction log object
+	 */
+	private TransactionLog updateTransactionLog(TransactionLog transactionLog, Object response, String serviceName) {
+		return TransactionLog.builder().build();
+	}
+
+		/**
+         * Updating an existing event log
+         *
+         * @param eventLog represents the event log that will be updated
+         * @param response represents the response obtained after invoking the client service
+         */
+	private EventLog updateEventLog(EventLog eventLog, String response) {
+		eventLog.setResponse(response);
+		eventLog.setDateLogged(new Date());
+		return eventLog;
+	}
     
     /**
      * Create RestTemplate with HTTP or HTTPS based on URL

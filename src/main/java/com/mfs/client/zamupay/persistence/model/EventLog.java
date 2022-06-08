@@ -17,7 +17,7 @@ import java.util.Date;
 @NoArgsConstructor
 
 @Entity
-@Table(name = "bank_event_log")
+@Table(name = "event_log")
 public class EventLog implements Serializable {
 
 	@Id
