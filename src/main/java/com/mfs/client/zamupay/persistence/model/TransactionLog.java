@@ -16,7 +16,7 @@ import java.util.Date;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(name = "bank_transaction_log")
+@Table(name = "transaction_log")
 public class TransactionLog {
 
     @Id
@@ -24,28 +24,54 @@ public class TransactionLog {
     @Column(name = "transaction_log_id", nullable = false)
     private int transactionLogId;
 
-    @Column(name = "transaction_id")
-    private String transactionId;
-
-    @Column(name = "mfs_reference_id", nullable = false)
+    @Column(name = "mfs_reference_id")
     private String mfsReferenceId;
-    
-    @Column(name = "receiver_msisdn", nullable = false)
-    private String receiverMsisdn;
 
-    @Column(name = "primary_account_number", nullable = false)
-    private String primaryAccountNumber;
+    @Column(name = "payment_notes", nullable = false)
+    private String paymentNotes;
 
-    @Column(name = "amount", nullable = false)
-    private Double amount;
+    @Column(name = "recipient_phone_number", nullable = false)
+    private String recipientPhoneNumber;
 
-    @Column(name = "result_code")
-    private int resultCode;
+    @Column(name = "recipient_primary_account_number", nullable = false)
+    private String recipientPrimaryAccountNumber;
+
+    @Column(name = "recipient_mccmnc", nullable = false)
+    private Double recipientMCCMNC;
+
+    @Column(name = "recipient_ccy")
+    private int recipientCCY;
+
+    @Column(name = "recipient_country")
+    private String recipientCountry;
+
+    @Column(name = "transaction_routeId", nullable = false)
+    private Date transactionRouteId;
+
+    @Column(name = "transaction_Channel_type")
+    private String transactionChannelType;
+
+    @Column(name = "remarks", nullable = false)
+    private String remarks;
+
+    @Column(name = "system_conversation_id", nullable = false)
+    private String systemConversationId;
+
+    @Column(name = "status", nullable = false)
+    private String status;
+
+    @Column(name = "result_code", nullable = false)
+    private Double resultCode;
 
     @Column(name = "result_desc")
-    private String resultDesc;
+    private int resultDesc;
 
-    @Column(name = "dateLogged", nullable = false)
+    @Column(name = "transaction_amount")
+    private String transactionAmount;
+
+    @Column(name = "date_logged", nullable = false)
     private Date dateLogged;
 }
+
+
 
