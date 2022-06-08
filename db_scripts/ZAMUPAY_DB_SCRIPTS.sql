@@ -41,7 +41,7 @@ CREATE TABLE transaction_log
    recipient_ccy                        varchar(255) NOT NULL,
    recipient_country                    varchar(255) NOT NULL,
    transaction_routeId                  varchar(255) NOT NULL,
-   transaction_Channel_type             varchar(255) NOT NULL,
+   transaction_Channel_type             int(20) NOT NULL,
    remarks                              varchar(255) NOT NULL,
    system_conversation_id               varchar(255) NOT NULL,
    status                               varchar(255) NOT NULL,
@@ -104,8 +104,8 @@ DROP TABLE IF EXISTS transaction_route;
 CREATE TABLE transaction_route
 (
     id               bigint NOT NULL AUTO_INCREMENT,
-    route_id     varchar(3)   NOT NULL,
-    channel_type     varchar(255)   NOT NULL,
+    route_id         varchar(3)   NOT NULL,
+    channel_type     int(20)   NOT NULL,
     transaction_type_id varchar(100) NOT NULL,
     PRIMARY KEY (id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;

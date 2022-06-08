@@ -32,13 +32,13 @@ public class TransactionLog {
     private String paymentNotes;
 
     @Column(name = "remitter_phone_number")
-    private Double remitterPhoneNumber;
+    private String remitterPhoneNumber;
 
     @Column(name = "remitter_country")
-    private Double remitterCountry;
+    private String remitterCountry;
 
     @Column(name = "remitter_ccy")
-    private Double remitterCCY;
+    private String remitterCCY;
 
     @Column(name = "recipient_phone_number", nullable = false)
     private String recipientPhoneNumber;
@@ -47,19 +47,19 @@ public class TransactionLog {
     private String recipientPrimaryAccountNumber;
 
     @Column(name = "recipient_mccmnc", nullable = false)
-    private Double recipientMCCMNC;
+    private String recipientMCCMNC;
 
     @Column(name = "recipient_ccy", nullable = false)
-    private int recipientCCY;
+    private String recipientCCY;
 
     @Column(name = "recipient_country", nullable = false)
     private String recipientCountry;
 
     @Column(name = "transaction_routeId", nullable = false)
-    private Date transactionRouteId;
+    private String transactionRouteId;
 
     @Column(name = "transaction_Channel_type", nullable = false)
-    private String transactionChannelType;
+    private int transactionChannelType;
 
     @Column(name = "remarks", nullable = false)
     private String remarks;
@@ -71,10 +71,10 @@ public class TransactionLog {
     private String status;
 
     @Column(name = "result_code", nullable = false)
-    private Double resultCode;
+    private String resultCode;
 
     @Column(name = "result_desc", nullable = false)
-    private int resultDesc;
+    private String resultDesc;
 
     @Column(name = "transaction_amount", nullable = false)
     private String transactionAmount;

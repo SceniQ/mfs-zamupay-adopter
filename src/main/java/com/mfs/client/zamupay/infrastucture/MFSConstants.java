@@ -20,5 +20,6 @@ public final class MFSConstants {
 	public static final String CLIENT_SECRET = "CLIENT_SECRET";
 	public static final String GRANT_TYPE = "GRANT_TYPE";
 	public static final String SCOPE = "SCOPE";
+	public static final String OPERATOR_NAME = "Safaricom Ltd";
 
 }

@@ -28,7 +28,7 @@ public class TransactionRoute {
     @Column(name = "route_id", nullable = false)
     private String routeId;
     @Column(name = "channel_type", nullable = false)
-    private String channelType;
+    private int channelType;
     @Column(name = "transaction_type_id", nullable = false)
     private String transactionTypeId;
 

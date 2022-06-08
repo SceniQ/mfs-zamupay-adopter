@@ -1,15 +1,26 @@
 package com.mfs.client.zamupay.api.service;
 
+import com.google.i18n.phonenumbers.NumberParseException;
+import com.google.i18n.phonenumbers.PhoneNumberUtil;
+import com.google.i18n.phonenumbers.Phonenumber;
 import com.mfs.client.zamupay.exception.MissingConfigValueException;
+import com.mfs.client.zamupay.exception.NoCountryFoundException;
+import com.mfs.client.zamupay.persistence.CountryMasterRepository;
+import com.mfs.client.zamupay.persistence.IdentityTypeRepository;
 import com.mfs.client.zamupay.persistence.SystemConfigRepository;
+import com.mfs.client.zamupay.persistence.model.CountryMaster;
+import com.mfs.client.zamupay.persistence.model.IdentityType;
 import com.mfs.client.zamupay.persistence.model.SystemConfig;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+
+import static java.util.Objects.isNull;
 
 /**
  * Configuration service used to acquire all the configuration information
@@ -19,7 +30,68 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class ConfigService {
 
+	final CountryMasterRepository countryRepository;
 	final SystemConfigRepository configRepository;
+	final IdentityTypeRepository identityTypeRepository;
+
+
+	/**
+	 * This method returns the country from the phoneNumber text
+	 *
+	 * @param phoneNumberText represents the phone number to used for acquiring the country code
+	 * @return String which consists of the country code
+	 */
+	public String getCountryByPhoneNumber(String phoneNumberText) {
+
+		if (StringUtils.isEmpty(phoneNumberText)) {
+			return null;
+		}
+
+		try {
+			PhoneNumberUtil phoneUtil = PhoneNumberUtil.getInstance();
+			phoneNumberText = phoneNumberText.trim();
+			if (!phoneNumberText.startsWith("+")) {
+				phoneNumberText = "+".concat(phoneNumberText);
+			}
+			Phonenumber.PhoneNumber phoneNumber = phoneUtil.parse(phoneNumberText, "");
+
+			CountryMaster countryMaster = countryRepository.findByPhoneCode(phoneNumber.getCountryCode());
+			return countryMaster.getCountryCode();
+		} catch (NumberParseException exception) {
+			exception.printStackTrace();
+			return null;
+		}
+	}
+
+	/**
+	 * This method returns the numeric country code from the phoneNumber text
+	 *
+	 * @param phoneNumberText represents the phone number to used for acquiring the numeric country code
+	 * @return String which consists of the country code
+	 */
+	public String getNumericCodeByPhoneNumber(String phoneNumberText) {
+		String countryCode = this.getCountryByPhoneNumber(phoneNumberText);
+
+		//Throw exception if country code is not found
+		if (isNull(countryCode))
+			throw new NoCountryFoundException("Country code for ".concat(phoneNumberText).concat(" could not be found."));
+
+		CountryMaster master = countryRepository.findByCountryCode(countryCode)
+				.orElseThrow(() -> new MissingConfigValueException("No country code exists for: " + countryCode));
+		return master.getNumericCode();
+	}
+
+	/**
+	 * Retrieves identity type from the DB
+	 *
+	 * @param value represents the type of identity that should be retrieved
+	 * @return an identity type
+	 */
+	public String getIdentityType(String value) {
+		IdentityType identity = identityTypeRepository.findByIdValue(value)
+				.orElseThrow(() -> new MissingConfigValueException("No identity type exists for: " + value));
+		return identity.getIdType();
+	}
 
 	/**
 	 * Retrieve system configuration
