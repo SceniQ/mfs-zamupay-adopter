@@ -38,7 +38,16 @@ public class TransactionRequest implements Serializable{
 	private Transaction transaction;
 
 	public static class Remitter{}
-	public static class Recipient{}
+	@Data
+	@EqualsAndHashCode @ToString
+	@Builder
+	@NoArgsConstructor
+	@AllArgsConstructor
+	@JsonIgnoreProperties(ignoreUnknown = true)
+	public static class Recipient{
+
+		private String phoneNumber;
+	}
 	public static class Transaction{}
 
 }
