@@ -1,5 +1,6 @@
 package com.mfs.client.zamupay.persistence.model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -71,6 +72,10 @@ public class TransactionLog {
 
     @Column(name = "date_logged", nullable = false)
     private Date dateLogged;
+
+    @JsonBackReference
+    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy = "transactionLog", orphanRemoval = true)
+    private TransactionDetail transactionDetail;
 }
 
 
