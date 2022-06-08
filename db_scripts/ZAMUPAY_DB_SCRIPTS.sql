@@ -104,8 +104,8 @@ DROP TABLE IF EXISTS transaction_route;
 CREATE TABLE transaction_route
 (
     id               bigint NOT NULL AUTO_INCREMENT,
-    route_id     varchar(3)   NOT NULL,
-    channel_type     varchar(255)   NOT NULL,
+    route_id         varchar(3)   NOT NULL,
+    channel_type     int(20)   NOT NULL,
     transaction_type_id varchar(100) NOT NULL,
     PRIMARY KEY (id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;

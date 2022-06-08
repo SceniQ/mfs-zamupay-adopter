@@ -74,6 +74,6 @@ public class TransactionDetail {
     private String transactionReference;
 
     @Column(name = "transaction_system_trace_audit_number", nullable = false)
-    private String transactionSystemAuditTraceNumber;
+    private String transactionSystemTraceAuditNumber;
 
 }
