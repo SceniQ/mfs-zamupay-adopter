@@ -1,7 +1,9 @@
 package com.mfs.client.zamupay.api.dto;
 
 import java.io.Serializable;
+import java.util.List;
 
+import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -25,7 +27,8 @@ public class TransactionRequest implements Serializable {
     @NotBlank(message = "Payment notes should not be blank")
     private String paymentNotes;
     @NotBlank(message = "Payment order lines should not be blank")
-    private PaymentOrderLines paymentOrderLines;
+    @Valid
+    List<PaymentOrderLines> orderLines;
 
 
     @Data
@@ -52,22 +55,16 @@ public class TransactionRequest implements Serializable {
         @JsonIgnoreProperties(ignoreUnknown = true)
         public static class Remitter {
 
-            private String remitterName;
-            private String remitterAddress;
-            private String remitterPhoneNumber;
-            private String remitterIdType;
-            private String remitterIdNumber;
-            private String remitterCountry;
-            private String remitterCCY;
-            private String remitterFinancialInstitution;
-            private String remitterSourceOfFunds;
-            private String remitterPrincipalActivity;
+            private String name;
+            private String address;
+            private String phoneNumber;
+            private String idType;
+            private String idNumber;
+            private String country;
+            private String financialInstitution;
+            private String sourceOfFunds;
+            private String principalActivity;
 
-            private String remitterDateOfBirth;
-            private String remitterIdIssueDate;
-            private String remitterIdIssuePlace;
-            private String remitterIdExpiryDate;
-            private String remitterNationality;
         }
 
         @Data
@@ -78,22 +75,20 @@ public class TransactionRequest implements Serializable {
         public static class Recipient {
 
             @NotBlank(message = "Recipient name should not be blank")
-            private String recipientName;
-            private String recipientAddress;
-            private String recipientEmailAddress;
+            private String name;
+            private String address;
+            private String emailAddress;
             @NotBlank(message = "Recipient phone number should not be blank")
-            private String recipientPhoneNumber;
-            private String recipientIdType;
-            private String recipientIdNumber;
-            private String recipientFinancialInstitution;
-            private String recipientInstitutionIdentifier;
+            private String phoneNumber;
+            private String idType;
+            private String idNumber;
+            private String financialInstitution;
+            private String institutionIdentifier;
             @NotBlank(message = "Recipient primary account number should not be blank")
-            private String recipientPrimaryAccountNumber;
-            private String recipientMCCMNC;
-            private String recipientCCY;
+            private String primaryAccountNumber;
             @NotBlank(message = "Recipient country should not be blank")
-            private String recipientCountry;
-            private String recipientPurpose;
+            private String country;
+            private String purpose;
         }
 
         @Data
@@ -103,13 +98,12 @@ public class TransactionRequest implements Serializable {
         @JsonIgnoreProperties(ignoreUnknown = true)
         public static class Transaction {
 
-            private String transactionRouteId;
-            private String transactionChannelType;
             @NotBlank(message = "Transaction amount should not be blank")
-            private String transactionAmount;
+            private String amount;
             @NotBlank(message = "Transaction reference should not be blank")
-            private String transactionReference;
-            private String transactionSystemTraceAuditNumber;
+            private String reference;
+            @NotBlank(message = "Transaction system trace audit number should not be blank")
+            private String systemTraceAuditNumber;
         }
     }
 
