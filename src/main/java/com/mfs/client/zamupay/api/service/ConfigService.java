@@ -4,6 +4,7 @@ import com.google.i18n.phonenumbers.NumberParseException;
 import com.google.i18n.phonenumbers.PhoneNumberUtil;
 import com.google.i18n.phonenumbers.Phonenumber;
 import com.mfs.client.zamupay.exception.MissingConfigValueException;
+import com.mfs.client.zamupay.exception.NoCountryFoundException;
 import com.mfs.client.zamupay.persistence.CountryMasterRepository;
 import com.mfs.client.zamupay.persistence.IdentityTypeRepository;
 import com.mfs.client.zamupay.persistence.SystemConfigRepository;
@@ -18,6 +19,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+
+import static java.util.Objects.isNull;
 
 /**
  * Configuration service used to acquire all the configuration information
@@ -68,17 +71,22 @@ public class ConfigService {
 	 */
 	public String getNumericCodeByPhoneNumber(String phoneNumberText) {
 		String countryCode = this.getCountryByPhoneNumber(phoneNumberText);
+
+		//Throw exception if country code is not found
+		if (isNull(countryCode))
+			throw new NoCountryFoundException("Country code for ".concat(phoneNumberText).concat(" could not be found."));
+
 		CountryMaster master = countryRepository.findByCountryCode(countryCode)
 				.orElseThrow(() -> new MissingConfigValueException("No country code exists for: " + countryCode));
 		return master.getNumericCode();
 	}
 
-		/**
-         * Retrieves identity type from the DB
-         *
-         * @param value represents the type of identity that should be retrieved
-         * @return an identity type
-         */
+	/**
+	 * Retrieves identity type from the DB
+	 *
+	 * @param value represents the type of identity that should be retrieved
+	 * @return an identity type
+	 */
 	public String getIdentityType(String value) {
 		IdentityType identity = identityTypeRepository.findByIdValue(value)
 				.orElseThrow(() -> new MissingConfigValueException("No identity type exists for: " + value));

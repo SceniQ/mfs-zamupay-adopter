@@ -12,10 +12,7 @@ import com.mfs.client.zamupay.exception.NoSuchTransactionExistsException;
 import com.mfs.client.zamupay.infrastucture.ResponseCode;
 import com.mfs.client.zamupay.persistence.MCCMNCMasterRepository;
 import com.mfs.client.zamupay.persistence.TransactionRepository;
-import com.mfs.client.zamupay.persistence.model.AccessToken;
-import com.mfs.client.zamupay.persistence.model.MCCMNCMaster;
-import com.mfs.client.zamupay.persistence.model.TransactionLog;
-import com.mfs.client.zamupay.persistence.model.TransactionRoute;
+import com.mfs.client.zamupay.persistence.model.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.http.HttpStatus;
@@ -116,10 +113,17 @@ public class TransactionService {
         TransactionLog transactionLog = new TransactionLog();
         transactionLog.setMfsReferenceId(request.getMfsReferenceId());
         transactionLog.setRecipientMCCMNC(prepareMCCMNC(request.getRecipient().getPhoneNumber()));
+        transactionLog.setRecipientCCY(configService.getNumericCodeByPhoneNumber(request.getRecipient().getPhoneNumber()));
         transactionLog.setDateLogged(new Date());
 
-        // set other required fields (transaction detail)
 
+        transactionLog = transactionRepository.save(transactionLog);
+
+        // set other required fields (transaction detail)
+        TransactionDetail detail = new TransactionDetail();
+
+
+        transactionLog.setTransactionDetail(detail);
         return transactionRepository.save(transactionLog);
     }
 
