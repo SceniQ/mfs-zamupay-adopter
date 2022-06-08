@@ -61,11 +61,24 @@ public class ConfigService {
 	}
 
 	/**
-	 * Retrieves identity type from the DB
+	 * This method returns the numeric country code from the phoneNumber text
 	 *
-	 * @param value represents the type of identity that should be retrieved
-	 * @return an identity type
+	 * @param phoneNumberText represents the phone number to used for acquiring the numeric country code
+	 * @return String which consists of the country code
 	 */
+	public String getNumericCountryCodeByPhoneNumber(String phoneNumberText) {
+		String countryCode = this.getCountryByPhoneNumber(phoneNumberText);
+		CountryMaster master = countryRepository.findByCountryCode(countryCode)
+				.orElseThrow(() -> new MissingConfigValueException("No country code exists for: " + countryCode));
+		return master.getNumericCode();
+	}
+
+		/**
+         * Retrieves identity type from the DB
+         *
+         * @param value represents the type of identity that should be retrieved
+         * @return an identity type
+         */
 	public String getIdentityType(String value) {
 		IdentityType identity = identityTypeRepository.findByIdValue(value)
 				.orElseThrow(() -> new MissingConfigValueException("No identity type exists for: " + value));
