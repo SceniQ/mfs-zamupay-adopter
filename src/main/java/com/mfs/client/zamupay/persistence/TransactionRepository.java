@@ -10,7 +10,7 @@ import java.util.Optional;
  * Repository class for performing all database operations on transaction log entity
  */
 @Repository
-public interface TransactionRepository extends JpaRepository<TransactionLog, Integer> {
+public interface TransactionRepository extends JpaRepository<TransactionLog, Long> {
     /**
      * This method retrieves a transaction log object using the mfsReferenceId.
      *

@@ -23,7 +23,7 @@ public class TransactionLog {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "transaction_log_id", nullable = false)
-    private int transactionLogId;
+    private Long transactionLogId;
 
     @Column(name = "mfs_reference_id")
     private String mfsReferenceId;

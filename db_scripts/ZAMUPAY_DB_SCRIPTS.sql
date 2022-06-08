@@ -40,7 +40,7 @@ CREATE TABLE transaction_log
    recipient_mccmnc                     varchar(255),
    recipient_ccy                        varchar(255) NOT NULL,
    recipient_country                    varchar(255) NOT NULL,
-   transaction_routeId                  varchar(255) NOT NULL,
+   transaction_route_id                  varchar(255) NOT NULL,
    transaction_Channel_type             int(20) NOT NULL,
    remarks                              varchar(255) NOT NULL,
    system_conversation_id               varchar(255) NOT NULL,

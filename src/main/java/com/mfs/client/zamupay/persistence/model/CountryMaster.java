@@ -31,7 +31,7 @@ public class CountryMaster implements Serializable{
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "country_id", nullable = false)
-    private int countryId;
+    private Integer countryId;
 
     @Column(name = "country_name")
     private String countryName;
